@@ -17,6 +17,20 @@ namespace Final_Project
             public string Genre { get; set; }
             public int Year { get; set; }
             public string Id { get; set; }
+            public bool IsAvailable { get; set; } = true;
+            public Book() { }
+            public Book(string title, string author, string genre, int year, string id)
+            {
+                Title = title;
+                Author = author;
+                Genre = genre;
+                Year = year;
+                Id = id;
+            }
+            public override string ToString()
+            {
+                return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
+            }
         }
             static void Main(string[] args)
         {
