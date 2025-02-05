@@ -8,8 +8,6 @@ using System.Xml.Serialization;
 
 namespace Final_Project
 {
-    internal class Program
-    {
         public class Book
         {
             public string Title { get; set; }
@@ -32,9 +30,28 @@ namespace Final_Project
                 return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
             }
         }
-            static void Main(string[] args)
+        public class User
         {
-           
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string UserId { get; set; }
+            public User() { }
+            public User(string firstName, string lastName, string userId)
+            {
+                FirstName = firstName;
+                LastName = lastName;
+                UserId = userId;
+            }
+            public override string ToString()
+            {
+                return $"{UserId}: {FirstName} {LastName}";
+            }
         }
+    internal class Program
+    {
+        static void Main(string[] args)
+            {
+           
+            }
     }
 }
