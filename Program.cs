@@ -55,28 +55,8 @@ namespace Final_Project
         private Dictionary<string, List<Book>> borrowedBooks;
         private const string BooksFile = "books.xml";
         private const string UsersFile = "users.xml";
-        private const string LogFile = "log.txt";
-
-        private Library()
-        {
-            books = LoadData<List<Book>>(BooksFile) ?? new List<Book>();
-            users = LoadData<List<User>>(UsersFile) ?? new List<User>();
-            borrowedBooks = new Dictionary<string, List<Book>>();
-        }
-        public static Library Instance => _instance ??= new Library();
-
-        public void AddBook(Book book)
-        {
-            if (books.Any(b => b.Id == book.Id))
-            {
-                Console.WriteLine("Книга с таким ID уже существует!");
-                return;
-            }
-            books.Add(book);
-            SaveData(books, BooksFile);
-            LogOperation($"Добавлена книга: {book}");
-        }
-    }
+        private const string LogFile = "log.txt"; 
+    }   
         internal class Program
     {
             static void Main(string[] args)
