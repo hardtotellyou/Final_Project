@@ -28,8 +28,8 @@ namespace Final_Project
             public override string ToString()
             {
                 return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
+            }
         }
-    }
         public class User
         {
             public string FirstName { get; set; }
@@ -69,12 +69,49 @@ namespace Final_Project
                     return _instance;
                 }
             }
+            public void AddBook(Book book)
+            {
+                if (books.Any(b => b.Id == book.Id))
+                {
+                    Console.WriteLine("Помилка: Книга з таким ID вже існує.");
+                    return;
+                }
+                books.Add(book);
+                Console.WriteLine($"Книга \"{book.Title}\" додана до бібліотеки.");
+            }
+            public void RemoveBook(string bookId)
+            {
+                Book book = books.FirstOrDefault(b => b.Id == bookId);
+                if (book != null)
+                {
+                    books.Remove(book);
+                    Console.WriteLine($"Книга \"{book.Title}\" видалена з бібліотеки.");
+                }
+                else
+                {
+                    Console.WriteLine("Помилка: Книга не знайдена.");
+                }
+            }
+            public void DisplayBooks()
+            {
+                if (books.Count == 0)
+                {
+                    Console.WriteLine("Бібліотека порожня.");
+                    return;
+                }
+
+                Console.WriteLine("Список книг у бібліотеці:");
+                foreach (var book in books)
+                {
+                    Console.WriteLine(book);
+                }
+            }
         }
         internal class Program
         {
             static void Main(string[] args)
             {
-           
+                
             }
         }
 }
