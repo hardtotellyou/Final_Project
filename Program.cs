@@ -56,7 +56,7 @@ namespace Final_Project
         private const string BooksFile = "books.xml";
         private const string UsersFile = "users.xml";
         private const string LogFile = "log.txt";
-    private Library()
+        private Library()
         {
             books = LoadData<List<Book>>(BooksFile) ?? new List<Book>();
             users = LoadData<List<User>>(UsersFile) ?? new List<User>();
@@ -255,7 +255,6 @@ namespace Final_Project
             LogAction($"Користувач повернув книгу \"{book.Title}\".");
             Console.WriteLine($"Користувач повернув книгу \"{book.Title}\".");
         }
-
         public void DisplayUserBooks(string userId)
         {
             if (!borrowedBooks.ContainsKey(userId) || borrowedBooks[userId].Count == 0)
