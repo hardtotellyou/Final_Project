@@ -301,18 +301,18 @@ namespace Final_Project
                 book.Genre = newGenre;
                 book.Year = newYear;
                 SaveData(BooksFile, books);
-                LogAction($"Обновлена информация о книге \"{book.Title}\".");
+                LogAction($"Оновлена інформація о книжці \"{book.Title}\".");
             }
             else
             {
-                Console.WriteLine("Ошибка: Книга не найдена.");
+                Console.WriteLine("Ошибка: Книга не знайдена.");
             }
         }
 
         public void SearchBooks(string keyword)
         {
             bool found = false;
-            Console.WriteLine("Результаты поиска:");
+            Console.WriteLine("Результати поиска:");
 
             foreach (var book in books)
             {
