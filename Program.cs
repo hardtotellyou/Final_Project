@@ -311,15 +311,19 @@ namespace Final_Project
 
         public void SearchBooks(string keyword)
         {
-            var results = books.Where(b => b.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                                           b.Author.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+            bool found = false;
+            Console.WriteLine("Результаты поиска:");
 
-            if (results.Any())
+            foreach (var book in books)
             {
-                Console.WriteLine("Результаты поиска:");
-                results.ForEach(Console.WriteLine);
+                if (book.Title.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    book.Author.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Console.WriteLine(book);
+                    found = true;
+                }
             }
-            else
+            if (!found)
             {
                 Console.WriteLine("Книг не найдено.");
             }
