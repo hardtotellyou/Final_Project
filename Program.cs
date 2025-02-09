@@ -8,7 +8,13 @@ using System.Xml.Serialization;
 
 namespace Final_Project
 {
-    public class Book
+    public interface IBorrowable
+    {
+        void Borrow();
+        void Return();
+    }
+
+    public class Book : IBorrowable
     {
         public string Title { get; set; }
         public string Author { get; set; }
@@ -25,9 +31,25 @@ namespace Final_Project
             Year = year;
             Id = id;
         }
+        public void Borrow()
+        {
+            IsAvailable = false;
+        }
+        public void Return()
+        {
+            IsAvailable = true;
+        }
         public override string ToString()
         {
             return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
+        }
+    }
+    public class EBook : Book
+    {
+        public string FileFormat { get; set; }
+        public EBook(string title, string author, string genre, int year, string id, string fileFormat) : base(title, author, genre, year, id)
+        {
+            FileFormat = fileFormat;
         }
     }
     public class User
@@ -47,7 +69,7 @@ namespace Final_Project
             return $"{UserId}: {FirstName} {LastName}";
         }
     }
-    public class Library
+    public class Library 
     {
         private static Library _instance;
         private List<Book> books;
@@ -269,12 +291,184 @@ namespace Final_Project
                 Console.WriteLine(book);
             }
         }
+        public void UpdateBook(string bookId, string newTitle, string newAuthor, string newGenre, int newYear)
+        {
+            var book = books.FirstOrDefault(b => b.Id == bookId);
+            if (book != null)
+            {
+                book.Title = newTitle;
+                book.Author = newAuthor;
+                book.Genre = newGenre;
+                book.Year = newYear;
+                SaveData(BooksFile, books);
+                LogAction($"Обновлена информация о книге \"{book.Title}\".");
+            }
+            else
+            {
+                Console.WriteLine("Ошибка: Книга не найдена.");
+            }
+        }
+
+        public void SearchBooks(string keyword)
+        {
+            var results = books.Where(b => b.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                                           b.Author.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (results.Any())
+            {
+                Console.WriteLine("Результаты поиска:");
+                results.ForEach(Console.WriteLine);
+            }
+            else
+            {
+                Console.WriteLine("Книг не найдено.");
+            }
+        }
+        public IEnumerable<Book> FilterBooks(string genre, int? year = null)
+        {
+            return books.Where(b => b.Genre.Equals(genre, StringComparison.OrdinalIgnoreCase) &&
+                                    (year == null || b.Year == year));
+        }
     }
     internal class Program
     {
         static void Main(string[] args)
         {
-                
+            Library library = Library.Instance;
+
+            while (true)
+            {
+                Console.WriteLine("\n=== Меню бібліотеки ===");
+                Console.WriteLine("1. Додати книгу");
+                Console.WriteLine("2. Оновити інформацію про книгу");
+                Console.WriteLine("3. Видалити книгу");
+                Console.WriteLine("4. Шукати книгу");
+                Console.WriteLine("5. Показати всі книги");
+                Console.WriteLine("6. Зареєструвати користувача");
+                Console.WriteLine("7. Видалити користувача");
+                Console.WriteLine("8. Показати всіх користувачів");
+                Console.WriteLine("9. Видати книгу користувачу");
+                Console.WriteLine("10. Повернути книгу");
+                Console.WriteLine("11. Показати книги, які взяв користувач");
+                Console.WriteLine("0. Вийти");
+                Console.Write("Оберіть опцію: ");
+                string choice = Console.ReadLine();
+                Console.Clear();
+
+                if (choice == "1")
+                    AddBook(library);
+                else if (choice == "2")
+                    UpdateBook(library);
+                else if (choice == "3")
+                    RemoveBook(library);
+                else if (choice == "4")
+                    SearchBook(library);
+                else if (choice == "5")
+                    library.DisplayBooks();
+                else if (choice == "6")
+                    AddUser(library);
+                else if (choice == "7")
+                    RemoveUser(library);
+                else if (choice == "8")
+                    library.DisplayUsers();
+                else if (choice == "9")
+                    BorrowBook(library);
+                else if (choice == "10")
+                    ReturnBook(library);
+                else if (choice == "11")
+                    DisplayUserBooks(library);
+                else if (choice == "0")
+                    return;
+                else
+                    Console.WriteLine("Невідома опція, спробуйте ще раз.");
+            }
+        }
+        static void AddBook(Library library)
+        {
+            Console.Write("Назва: ");
+            string title = Console.ReadLine();
+            Console.Write("Автор: ");
+            string author = Console.ReadLine();
+            Console.Write("Жанр: ");
+            string genre = Console.ReadLine();
+            Console.Write("Рік видання: ");
+            int year = int.Parse(Console.ReadLine());
+            Console.Write("ID книги: ");
+            string id = Console.ReadLine();
+
+            Book book = new Book(title, author, genre, year, id);
+            library.AddBook(book);
+        }
+        static void UpdateBook(Library library)
+        {
+            Console.Write("Введіть ID книги для оновлення: ");
+            string id = Console.ReadLine();
+            Console.Write("Нова назва: ");
+            string title = Console.ReadLine();
+            Console.Write("Новий автор: ");
+            string author = Console.ReadLine();
+            Console.Write("Новий жанр: ");
+            string genre = Console.ReadLine();
+            Console.Write("Новий рік видання: ");
+            int year = int.Parse(Console.ReadLine());
+
+            library.UpdateBook(id, title, author, genre, year);
+        }
+        static void RemoveBook(Library library)
+        {
+            Console.Write("Введіть ID книги для видалення: ");
+            string id = Console.ReadLine();
+            library.RemoveBook(id);
+        }
+        static void SearchBook(Library library)
+        {
+            Console.Write("Введіть назву або автора книги: ");
+            string keyword = Console.ReadLine();
+            library.SearchBooks(keyword);
+        }
+        static void AddUser(Library library)
+        {
+            Console.Write("Ім'я: ");
+            string firstName = Console.ReadLine();
+            Console.Write("Прізвище: ");
+            string lastName = Console.ReadLine();
+            Console.Write("ID користувача: ");
+            string userId = Console.ReadLine();
+
+            User user = new User(firstName, lastName, userId);
+            library.AddUser(user);
+        }
+
+        static void RemoveUser(Library library)
+        {
+            Console.Write("Введіть ID користувача для видалення: ");
+            string id = Console.ReadLine();
+            library.RemoveUser(id);
+        }
+
+        static void BorrowBook(Library library)
+        {
+            Console.Write("ID користувача: ");
+            string userId = Console.ReadLine();
+            Console.Write("ID книги: ");
+            string bookId = Console.ReadLine();
+            library.BorrowBook(userId, bookId);
+        }
+
+        static void ReturnBook(Library library)
+        {
+            Console.Write("ID користувача: ");
+            string userId = Console.ReadLine();
+            Console.Write("ID книги: ");
+            string bookId = Console.ReadLine();
+            library.ReturnBook(userId, bookId);
+        }
+
+        static void DisplayUserBooks(Library library)
+        {
+            Console.Write("ID користувача: ");
+            string userId = Console.ReadLine();
+            library.DisplayUserBooks(userId);
         }
     }
 }
