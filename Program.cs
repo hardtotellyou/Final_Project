@@ -53,10 +53,12 @@ namespace Final_Project
             private List<Book> books;
             private List<User> users;
             private Dictionary<string, List<Book>> borrowedBooks;
-            private Library()
+            private const string BooksFile = "books.xml";
+            private const string UsersFile = "users.xml";
+        private Library()
             {
-                books = new List<Book>();
-                users = new List<User>();
+                books = LoadData<List<Book>>(BooksFile) ?? new List<Book>();
+                users = LoadData<List<User>>(UsersFile) ?? new List<User>();
                 borrowedBooks = new Dictionary<string, List<Book>>();
             }
 
@@ -69,14 +71,49 @@ namespace Final_Project
                     return _instance;
                 }
             }
+            private void SaveData<T>(string fileName, T data)
+            {
+                try
+                {
+                    using (FileStream fs = new FileStream(fileName, FileMode.Create))
+                    {
+                        XmlSerializer serializer = new XmlSerializer(typeof(T));
+                        serializer.Serialize(fs, data);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Помилка при збереженні файлу {fileName}: {ex.Message}");
+                }
+            }
+            private T LoadData<T>(string fileName) where T : class
+            {
+                try
+                {
+                    if (File.Exists(fileName))
+                    {
+                        using (FileStream fs = new FileStream(fileName, FileMode.Open))
+                        {
+                            XmlSerializer serializer = new XmlSerializer(typeof(T));
+                            return serializer.Deserialize(fs) as T;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Помилка при завантаженні файлу {fileName}: {ex.Message}");
+                }
+                return null;
+            }
             public void AddBook(Book book)
             {
-                if (books.Any(b => b.Id == book.Id))
-                {
-                    Console.WriteLine("Помилка: Книга з таким ID вже існує.");
-                    return;
-                }
+                    if (books.Any(b => b.Id == book.Id))
+                    {
+                        Console.WriteLine("Помилка: Книга з таким ID вже існує.");
+                        return;
+                    }
                 books.Add(book);
+                SaveData(BooksFile, books);
                 Console.WriteLine($"Книга \"{book.Title}\" додана до бібліотеки.");
             }
             public void RemoveBook(string bookId)
@@ -85,6 +122,7 @@ namespace Final_Project
                 if (book != null)
                 {
                     books.Remove(book);
+                    SaveData(BooksFile, books);
                     Console.WriteLine($"Книга \"{book.Title}\" видалена з бібліотеки.");
                 }
                 else
@@ -114,6 +152,7 @@ namespace Final_Project
                     return;
                 }
                 users.Add(user);
+                SaveData(UsersFile, users);
                 Console.WriteLine($"Користувач {user.FirstName} {user.LastName} доданий.");
             }
             public void RemoveUser(string userId)
@@ -129,11 +168,11 @@ namespace Final_Project
                     Console.WriteLine("Помилка: Користувач не знайдений.");
                 }
             }
-
             public void DisplayUsers()
             {
                 if (users.Count == 0)
                 {
+                    SaveData(UsersFile, users);
                     Console.WriteLine("Немає зареєстрованих користувачів.");
                     return;
                 }
