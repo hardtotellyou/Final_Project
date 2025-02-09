@@ -106,6 +106,112 @@ namespace Final_Project
                     Console.WriteLine(book);
                 }
             }
+            public void AddUser(User user)
+            {
+                if (users.Any(u => u.UserId == user.UserId))
+                {
+                    Console.WriteLine("Помилка: Користувач з таким ID вже існує.");
+                    return;
+                }
+                users.Add(user);
+                Console.WriteLine($"Користувач {user.FirstName} {user.LastName} доданий.");
+            }
+            public void RemoveUser(string userId)
+            {
+                User user = users.FirstOrDefault(u => u.UserId == userId);
+                if (user != null)
+                {
+                    users.Remove(user);
+                    Console.WriteLine($"Користувач {user.FirstName} {user.LastName} видалений.");
+                }
+                else
+                {
+                    Console.WriteLine("Помилка: Користувач не знайдений.");
+                }
+            }
+
+            public void DisplayUsers()
+            {
+                if (users.Count == 0)
+                {
+                    Console.WriteLine("Немає зареєстрованих користувачів.");
+                    return;
+                }
+
+                Console.WriteLine("Список користувачів:");
+                foreach (var user in users)
+                {
+                    Console.WriteLine(user);
+                }
+            }
+            public void BorrowBook(string userId, string bookId)
+            {
+                User user = users.FirstOrDefault(u => u.UserId == userId);
+                Book book = books.FirstOrDefault(b => b.Id == bookId);
+
+                if (user == null)
+                {
+                    Console.WriteLine("Помилка: Користувач не знайдений.");
+                    return;
+                }
+
+                if (book == null)
+                {
+                    Console.WriteLine("Помилка: Книга не знайдена.");
+                    return;
+                }
+
+                if (!book.IsAvailable)
+                {
+                    Console.WriteLine($"Книга \"{book.Title}\" уже взята.");
+                    return;
+                }
+
+                book.IsAvailable = false;
+
+                if (!borrowedBooks.ContainsKey(userId))
+                {
+                    borrowedBooks[userId] = new List<Book>();
+                }
+                borrowedBooks[userId].Add(book);
+
+                Console.WriteLine($"Користувач {user.FirstName} {user.LastName} взяв книгу \"{book.Title}\".");
+            }
+            public void ReturnBook(string userId, string bookId)
+            {
+                if (!borrowedBooks.ContainsKey(userId) || borrowedBooks[userId].Count == 0)
+                {
+                    Console.WriteLine("Помилка: Користувач не має взятих книг.");
+                    return;
+                }
+
+                Book book = borrowedBooks[userId].FirstOrDefault(b => b.Id == bookId);
+                if (book == null)
+                {
+                    Console.WriteLine("Помилка: Книга не знайдена серед взятих.");
+                    return;
+                }
+
+                borrowedBooks[userId].Remove(book);
+                book.IsAvailable = true;
+
+                Console.WriteLine($"Користувач повернув книгу \"{book.Title}\".");
+            }
+
+            public void DisplayUserBooks(string userId)
+            {
+                if (!borrowedBooks.ContainsKey(userId) || borrowedBooks[userId].Count == 0)
+                {
+                    Console.WriteLine("Користувач не має взятих книг.");
+                    return;
+                }
+
+                Console.WriteLine($"Список книг, які взяв користувач {userId}:");
+                foreach (var book in borrowedBooks[userId])
+                {
+                    Console.WriteLine(book);
+                }
+            }
         }
         internal class Program
         {
