@@ -30,38 +30,51 @@ namespace Final_Project
                 return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
         }
     }
-    public class User
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string UserId { get; set; }
-        public User() { }
-        public User(string firstName, string lastName, string userId)
+        public class User
         {
-            FirstName = firstName;
-            LastName = lastName;
-            UserId = userId;
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string UserId { get; set; }
+            public User() { }
+            public User(string firstName, string lastName, string userId)
+            {
+                FirstName = firstName;
+                LastName = lastName;
+                UserId = userId;
+            }
+            public override string ToString()
+            {
+                return $"{UserId}: {FirstName} {LastName}";
+            }
         }
-        public override string ToString()
+        public class Library
         {
-            return $"{UserId}: {FirstName} {LastName}";
+            private static Library _instance;
+            private List<Book> books;
+            private List<User> users;
+            private Dictionary<string, List<Book>> borrowedBooks;
+            private Library()
+            {
+                books = new List<Book>();
+                users = new List<User>();
+                borrowedBooks = new Dictionary<string, List<Book>>();
+            }
+
+            public static Library Instance
+            {
+                get
+                {
+                    if (_instance == null)
+                        _instance = new Library();
+                    return _instance;
+                }
+            }
         }
-    }
-    public class Library
-    {
-        private static Library _instance;
-        private List<Book> books;
-        private List<User> users;
-        private Dictionary<string, List<Book>> borrowedBooks;
-        private const string BooksFile = "books.xml";
-        private const string UsersFile = "users.xml";
-        private const string LogFile = "log.txt"; 
-    }   
         internal class Program
-    {
+        {
             static void Main(string[] args)
             {
            
             }
-    }
+        }
 }
