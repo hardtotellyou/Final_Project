@@ -8,20 +8,24 @@ using System.Xml.Serialization;
 
 namespace Final_Project
 {
+    // Інтерфейс IBorrowable, який вимагає методи Borrow() і Return()
     public interface IBorrowable
     {
-        void Borrow();
-        void Return();
+        void Borrow(); // Метод для позичання книги
+        void Return(); // Метод для повернення книги
     }
 
+    // Клас Book, що реалізує інтерфейс IBorrowable
     public class Book : IBorrowable
     {
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Genre { get; set; }
-        public int Year { get; set; }
-        public string Id { get; set; }
-        public bool IsAvailable { get; set; } = true;
+        public string Title { get; set; } // Назва книги
+        public string Author { get; set; } // Автор книги
+        public string Genre { get; set; } // Жанр книги
+        public int Year { get; set; } // Рік видання
+        public string Id { get; set; } // Ідентифікатор книги
+        public bool IsAvailable { get; set; } = true; // Статус наявності книги в бібліотеці (за замовчуванням доступна)
+
+        // Конструктори класу
         public Book() { }
         public Book(string title, string author, string genre, int year, string id)
         {
@@ -31,32 +35,46 @@ namespace Final_Project
             Year = year;
             Id = id;
         }
+
+        // Метод Borrow() реалізує позичання книги (змінюється на недоступну)
         public void Borrow()
         {
             IsAvailable = false;
         }
+
+        // Метод Return() реалізує повернення книги (змінюється на доступну)
         public void Return()
         {
             IsAvailable = true;
         }
+
+        // Перевизначення методу ToString для зручного виведення інформації про книгу
         public override string ToString()
         {
             return $"{Id}: {Title} by {Author} ({Year}) - {(IsAvailable ? "Available" : "Borrowed")}";
         }
     }
+
+    // Клас EBook, що наслідує клас Book та додає властивість FileFormat
     public class EBook : Book
     {
-        public string FileFormat { get; set; }
+        public string FileFormat { get; set; } // Формат електронної книги
+
+        // Конструктор класу EBook
         public EBook(string title, string author, string genre, int year, string id, string fileFormat) : base(title, author, genre, year, id)
         {
             FileFormat = fileFormat;
         }
     }
+
+    // Клас User для представлення користувача бібліотеки
     public class User
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string UserId { get; set; }
+        public string FirstName { get; set; } // Ім'я користувача
+        public string LastName { get; set; } // Прізвище користувача
+        public string UserId { get; set; } // Ідентифікатор користувача
+
+        // Конструктори класу
         public User() { }
         public User(string firstName, string lastName, string userId)
         {
@@ -64,27 +82,37 @@ namespace Final_Project
             LastName = lastName;
             UserId = userId;
         }
+
+        // Перевизначення методу ToString для зручного виведення інформації про користувача
         public override string ToString()
         {
             return $"{UserId}: {FirstName} {LastName}";
         }
     }
-    public class Library 
+
+    // Клас Library для керування бібліотекою
+    public class Library
     {
-        private static Library _instance;
-        private List<Book> books;
-        private List<User> users;
-        private Dictionary<string, List<Book>> borrowedBooks;
+        private static Library _instance; // Одиничний екземпляр бібліотеки (патерн Singleton)
+        private List<Book> books; // Список книг в бібліотеці
+        private List<User> users; // Список користувачів бібліотеки
+        private Dictionary<string, List<Book>> borrowedBooks; // Словник з позиченими книгами (за ID користувача)
+
+        // Імена файлів для збереження даних
         private const string BooksFile = "books.xml";
         private const string UsersFile = "users.xml";
         private const string LogFile = "log.txt";
+
+        // Приватний конструктор для ініціалізації бібліотеки
         private Library()
         {
+            // Завантаження даних з файлів або створення нових списків
             books = LoadData<List<Book>>(BooksFile) ?? new List<Book>();
             users = LoadData<List<User>>(UsersFile) ?? new List<User>();
-            borrowedBooks = new Dictionary<string, List<Book>>();
+            borrowedBooks = new Dictionary<string, List<Book>>(); // Ініціалізація словника для позичених книг
         }
 
+        // Публічний доступ до єдиного екземпляра бібліотеки
         public static Library Instance
         {
             get
@@ -94,6 +122,8 @@ namespace Final_Project
                 return _instance;
             }
         }
+
+        // Метод для збереження даних у файл
         private void SaveData<T>(string fileName, T data)
         {
             try
@@ -109,6 +139,8 @@ namespace Final_Project
                 Console.WriteLine($"Помилка при збереженні файлу {fileName}: {ex.Message}");
             }
         }
+
+        // Метод для завантаження даних з файлу
         private T LoadData<T>(string fileName) where T : class
         {
             try
@@ -128,6 +160,8 @@ namespace Final_Project
             }
             return null;
         }
+
+        // Метод для запису дій в лог-файл
         private void LogAction(string action)
         {
             try
@@ -142,26 +176,32 @@ namespace Final_Project
                 Console.WriteLine($"Помилка при записі в лог-файл: {ex.Message}");
             }
         }
+
+        // Метод для додавання книги в бібліотеку
         public void AddBook(Book book)
         {
-                if (books.Any(b => b.Id == book.Id))
-                {
-                    Console.WriteLine("Помилка: Книга з таким ID вже існує.");
-                    return;
-                }
-            books.Add(book);
-            SaveData(BooksFile, books);
-            LogAction($"Книга \"{book.Title}\" додана до бібліотеки.");
+            // Перевірка на наявність книги з таким ID
+            if (books.Any(b => b.Id == book.Id))
+            {
+                Console.WriteLine("Помилка: Книга з таким ID вже існує.");
+                return;
+            }
+            books.Add(book); // Додаємо книгу до списку
+            SaveData(BooksFile, books); // Зберігаємо зміни у файл
+            LogAction($"Книга \"{book.Title}\" додана до бібліотеки."); // Записуємо в лог
             Console.WriteLine($"Книга \"{book.Title}\" додана до бібліотеки.");
         }
+
+        // Метод для видалення книги за ID
         public void RemoveBook(string bookId)
         {
+            // Знаходимо книгу по ID
             Book book = books.FirstOrDefault(b => b.Id == bookId);
             if (book != null)
             {
-                books.Remove(book);
-                SaveData(BooksFile, books);
-                LogAction($"Книга \"{book.Title}\" була видалена.");
+                books.Remove(book); // Видаляємо книгу зі списку
+                SaveData(BooksFile, books); // Зберігаємо зміни у файл
+                LogAction($"Книга \"{book.Title}\" була видалена."); // Записуємо в лог
                 Console.WriteLine($"Книга \"{book.Title}\" видалена з бібліотеки.");
             }
             else
@@ -169,6 +209,8 @@ namespace Final_Project
                 Console.WriteLine("Помилка: Книга не знайдена.");
             }
         }
+
+        // Метод для відображення всіх книг в бібліотеці
         public void DisplayBooks()
         {
             if (books.Count == 0)
@@ -180,9 +222,11 @@ namespace Final_Project
             Console.WriteLine("Список книг у бібліотеці:");
             foreach (var book in books)
             {
-                Console.WriteLine(book);
+                Console.WriteLine(book); // Виводимо інформацію про книгу
             }
         }
+
+        // Метод для додавання нового користувача
         public void AddUser(User user)
         {
             if (users.Any(u => u.UserId == user.UserId))
@@ -190,17 +234,20 @@ namespace Final_Project
                 Console.WriteLine("Помилка: Користувач з таким ID вже існує.");
                 return;
             }
-            users.Add(user);
-            SaveData(UsersFile, users);
+            users.Add(user); // Додаємо користувача до списку
+            SaveData(UsersFile, users); // Зберігаємо зміни у файл
             LogAction($"Користувач {user.FirstName} {user.LastName} був зареєстрований.");
             Console.WriteLine($"Користувач {user.FirstName} {user.LastName} доданий.");
         }
+
+        // Метод для видалення користувача за ID
         public void RemoveUser(string userId)
         {
+            // Знаходимо користувача по ID
             User user = users.FirstOrDefault(u => u.UserId == userId);
             if (user != null)
             {
-                users.Remove(user);
+                users.Remove(user); // Видаляємо користувача зі списку
                 LogAction($"Користувач {user.FirstName} {user.LastName} був видалений.");
                 Console.WriteLine($"Користувач {user.FirstName} {user.LastName} видалений.");
             }
@@ -209,6 +256,8 @@ namespace Final_Project
                 Console.WriteLine("Помилка: Користувач не знайдений.");
             }
         }
+
+        // Метод для відображення всіх користувачів
         public void DisplayUsers()
         {
             if (users.Count == 0)
@@ -221,13 +270,15 @@ namespace Final_Project
             Console.WriteLine("Список користувачів:");
             foreach (var user in users)
             {
-                Console.WriteLine(user);
+                Console.WriteLine(user); // Виводимо інформацію про користувача
             }
         }
+
+        // Метод для позичання книги користувачу
         public void BorrowBook(string userId, string bookId)
         {
-            User user = users.FirstOrDefault(u => u.UserId == userId);
-            Book book = books.FirstOrDefault(b => b.Id == bookId);
+            User user = users.FirstOrDefault(u => u.UserId == userId); // Знаходимо користувача
+            Book book = books.FirstOrDefault(b => b.Id == bookId); // Знаходимо книгу
 
             if (user == null)
             {
@@ -243,20 +294,22 @@ namespace Final_Project
 
             if (!book.IsAvailable)
             {
-                Console.WriteLine($"Книга \"{book.Title}\" уже взята.");
+                Console.WriteLine($"Книга \"{book.Title}\" вже взята.");
                 return;
             }
 
-            book.IsAvailable = false;
+            book.IsAvailable = false; // Змінюємо статус книги на недоступну
 
             if (!borrowedBooks.ContainsKey(userId))
             {
-                borrowedBooks[userId] = new List<Book>();
+                borrowedBooks[userId] = new List<Book>(); // Ініціалізуємо список для користувача
             }
-            borrowedBooks[userId].Add(book);
+            borrowedBooks[userId].Add(book); // Додаємо книгу до списку позичених книг користувача
             LogAction($"Користувач {user.FirstName} {user.LastName} взяв книгу \"{book.Title}\".");
             Console.WriteLine($"Користувач {user.FirstName} {user.LastName} взяв книгу \"{book.Title}\".");
         }
+
+        // Метод для повернення книги користувачем
         public void ReturnBook(string userId, string bookId)
         {
             if (!borrowedBooks.ContainsKey(userId) || borrowedBooks[userId].Count == 0)
@@ -265,6 +318,7 @@ namespace Final_Project
                 return;
             }
 
+            // Знаходимо книгу в списку позичених книг користувача
             Book book = borrowedBooks[userId].FirstOrDefault(b => b.Id == bookId);
             if (book == null)
             {
@@ -272,11 +326,13 @@ namespace Final_Project
                 return;
             }
 
-            borrowedBooks[userId].Remove(book);
-            book.IsAvailable = true;
+            borrowedBooks[userId].Remove(book); // Видаляємо книгу з позичених книг
+            book.IsAvailable = true; // Змінюємо статус книги на доступну
             LogAction($"Користувач повернув книгу \"{book.Title}\".");
             Console.WriteLine($"Користувач повернув книгу \"{book.Title}\".");
         }
+
+        // Метод для відображення всіх книг, які позичив користувач
         public void DisplayUserBooks(string userId)
         {
             if (!borrowedBooks.ContainsKey(userId) || borrowedBooks[userId].Count == 0)
@@ -288,19 +344,21 @@ namespace Final_Project
             Console.WriteLine($"Список книг, які взяв користувач {userId}:");
             foreach (var book in borrowedBooks[userId])
             {
-                Console.WriteLine(book);
+                Console.WriteLine(book); // Виводимо інформацію про позичені книги
             }
         }
+
+        // Метод для оновлення інформації про книгу
         public void UpdateBook(string bookId, string newTitle, string newAuthor, string newGenre, int newYear)
         {
-            var book = books.FirstOrDefault(b => b.Id == bookId);
+            var book = books.FirstOrDefault(b => b.Id == bookId); // Знаходимо книгу по ID
             if (book != null)
             {
                 book.Title = newTitle;
                 book.Author = newAuthor;
                 book.Genre = newGenre;
                 book.Year = newYear;
-                SaveData(BooksFile, books);
+                SaveData(BooksFile, books); // Зберігаємо зміни у файл
                 LogAction($"Оновлена інформація о книжці \"{book.Title}\".");
             }
             else
@@ -309,6 +367,7 @@ namespace Final_Project
             }
         }
 
+        // Метод для пошуку книг по ключовому слову (назва або автор)
         public void SearchBooks(string keyword)
         {
             bool found = false;
@@ -319,7 +378,7 @@ namespace Final_Project
                 if (book.Title.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
                     book.Author.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    Console.WriteLine(book);
+                    Console.WriteLine(book); // Виводимо знайдені книги
                     found = true;
                 }
             }
@@ -328,10 +387,12 @@ namespace Final_Project
                 Console.WriteLine("Книг не найдено.");
             }
         }
+
+        // Метод для фільтрації книг за жанром і роком видання
         public IEnumerable<Book> FilterBooks(string genre, int? year = null)
         {
             return books.Where(b => b.Genre.Equals(genre, StringComparison.OrdinalIgnoreCase) &&
-                                    (year == null || b.Year == year));
+                                    (year == null || b.Year == year)); // Повертаємо відфільтровані книги
         }
     }
     internal class Program
